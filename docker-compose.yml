@@ -1,0 +1,56 @@
+version: '2.2'
+services:
+  registry:
+    image: 'registry:2.6.2'
+    restart: 'unless-stopped'
+    environment: 
+      REGISTRY_HTTP_SECRET: '${REGISTRY_HTTP_SECRET}'
+      VIRTUAL_HOST: 'https://registry.${TLD}'
+      # EXCLUDE_BASIC_AUT: =true
+    volumes:
+      - ${ROOT_FOLDER}/registry/data:/var/lib/registry
+
+  haproxy:
+    image: 'dockercloud/haproxy:1.6.7'
+    restart: 'always'
+    environment: 
+      STATS_AUTH: 'admin:${GENERAL_PASSWORD}'
+      HTTP_BASIC_AUTH: 'admin:${GENERAL_PASSWORD}'
+      DEFAULT_SSL_CERT: '${DEFAULT_SSL_CERT}'
+      # DEBUG: 'true'
+      ADDITIONAL_SERVICES: |
+        tools:portainer,
+        tools:mqtt,
+        monitoring:grafana,
+        hnews:hnews,
+        hnews:kue,
+        booksclub:postgrest,
+        booksclub:api-proxy,
+        booksclub:api-cache,
+        booksclub:booksclub
+    ports:
+      # - '80:80"
+      - '443:443'
+      - '1936:1936'
+    depends_on: 
+      - letsencrypt
+    links: 
+      - registry
+    volumes_from:
+      - letsencrypt
+
+  letsencrypt:
+    image: 'valentinvieriu/letsencrypt:1.0.0'
+    restart: 'always'
+    environment:
+      EMAIL: 'valentin.vieriu@gmail.com'
+      HAPROXY_IMAGE: 'dockercloud/haproxy:1.6.7'
+      DOMAINS : |
+        registry.${TLD},
+        mqtt.${TLD}
+    ports:
+      - '80:80'
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - '${ROOT_FOLDER}/certs:/certs'
+      - '${ROOT_FOLDER}/letsencrypt:/etc/letsencrypt'

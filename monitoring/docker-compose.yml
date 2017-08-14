@@ -1,0 +1,80 @@
+version: '2.2'
+networks:
+  infra_default:
+    external: true
+services:
+  prometheus:
+    image: '${REGISTRY_BASE_URL}/monitoring/prometheus:1.7.1'
+    restart: 'unless-stopped'
+    volumes:
+      - '${ROOT_FOLDER}/prometheus/data:/prometheus'
+    command:
+      - '-config.file=/etc/prometheus/prometheus.yml'
+      - '-storage.local.path=/prometheus'
+      - '-alertmanager.url=http://alertmanager:9093'
+      - '-storage.local.memory-chunks=100000'
+    depends_on:
+      - cadvisor
+    environment: 
+      VIRTUAL_HOST: 'https://prometheus.${TLD}'
+
+  grafana:
+    image: 'grafana/grafana:4.4.3'
+    restart: 'unless-stopped'
+    depends_on:
+      - prometheus
+    networks:
+      - default
+      - infra_default
+    volumes:
+      - '${ROOT_FOLDER}/grafana/data:/var/lib/grafana'
+      - '${ROOT_FOLDER}/grafana/log:/var/log/grafana'
+      - '${ROOT_FOLDER}/grafana/etc:/etc/grafana'
+    environment: 
+      GF_SERVER_ROOT: 'https://grafana.${TLD}'
+      # GF_AUTH_BASIC: 'true'
+      GF_AUTH_PROXY_ENABLED: 'true'
+      GF_SECURITY_ADMIN_USER: 'admin'
+      GF_SECURITY_ADMIN_PASSWORD: '${GENERAL_PASSWORD}'
+      GZIP_COMPRESSION_TYPE: 'text/html text/plain text/css application/javascript application/json'
+      VIRTUAL_HOST: 'https://grafana.${TLD}'
+      FORCE_SSL: 'true'
+
+  alertmanager:
+    image: '${REGISTRY_BASE_URL}/monitoring/alertmanager:0.8.0'
+    restart: 'unless-stopped'
+    depends_on:
+      - prometheus
+    command:
+      - '-config.file=/etc/alertmanager/config.yml'
+      - '-storage.path=/alertmanager'
+    volumes:
+      - '${ROOT_FOLDER}/alertmanager/data:/alertmanager'
+
+  cadvisor:
+    image: 'google/cadvisor:v0.26.1'
+    restart: 'unless-stopped'
+    volumes:
+      - '/:/rootfs:ro'
+      - '/var/run:/var/run:rw'
+      - '/sys:/sys:ro'
+      - '/var/lib/docker/:/var/lib/docker:ro'
+
+  node-exporter:
+    image: 'prom/node-exporter:v0.14.0'
+    restart: 'unless-stopped'
+    volumes:
+      - '/proc:/host/proc:ro'
+      - '/sys:/host/sys:ro'
+      - '/:/rootfs:ro'
+    command: '-collector.procfs=/host/proc -collector.sysfs=/host/sys -collector.filesystem.ignored-mount-points="^(/rootfs|/host|)/(sys|proc|dev|host|etc)($$|/)" collector.filesystem.ignored-fs-types="^(sys|proc|auto|cgroup|devpts|ns|au|fuse\.lxc|mqueue)(fs|)$$"'
+
+  haproxy-exporter:
+    image: 'prom/haproxy-exporter:v0.7.1'
+    restart: 'unless-stopped'
+    external_links:
+      - haproxy
+    networks:
+      - default
+      - infra_default
+    command: '-haproxy.scrape-uri="http://admin:${GENERAL_PASSWORD}@haproxy:1936/;csv"'

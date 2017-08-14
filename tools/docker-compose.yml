@@ -1,0 +1,31 @@
+version: '2.2'
+networks:
+  infra_default:
+    external: true
+services:
+  portainer:
+    image: 'portainer/portainer:1.14.0'
+    restart: 'unless-stopped'
+    mem_limit: '512M'
+    command: '--no-auth'
+    networks:
+      infra_default:
+    volumes: 
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - '${ROOT_FOLDER}/portainer/data:/data'
+    environment:
+      NODE_ENV: 'production'
+      VIRTUAL_HOST: 'https://portainer.${TLD}'
+      FORCE_SSL: 'true'
+      GZIP_COMPRESSION_TYPE: 'text/html text/plain text/css application/javascript application/json'
+  mqtt:
+    image: 'valentinvieriu/alpine-mosquitto:1.4.14'
+    restart: 'unless-stopped'
+    networks:
+      infra_default:
+    ports: 
+      - '1883:1883'
+    environment: 
+      VIRTUAL_HOST: 'ws://mqtt.${TLD}, wss://mqtt.${TLD}'
+      EXCLUDE_PORTS: '1883'
+      EXCLUDE_BASIC_AUTH: 'true'

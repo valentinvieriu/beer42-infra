@@ -1,0 +1,137 @@
+version: '2.2'
+networks:
+  default:
+    external:
+      name: '${DOCKER_NETWORK}_default'
+services:
+  redis:
+    image: 'redis:3.2.10-alpine'
+    restart: 'unless-stopped'
+    command: 'redis-server --requirepass ${REDIS_PASSWORD}'
+    volumes:
+      - '${ROOT_FOLDER}/redis/data:/data'
+
+  postgres:
+    image: 'postgres:9.6.3-alpine'
+    restart: 'unless-stopped'
+    environment: 
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD}'
+    volumes:
+      - '${ROOT_FOLDER}/postgres/data:/var/lib/postgresql/data'
+
+  postgrest:
+    image: '${REGISTRY_BASE_URL}/postgrest:4.2.0'
+    restart: 'unless-stopped'
+    depends_on:
+      - postgres
+    environment: 
+      PGRST_DB_URI: 'postgres://${PGRST_DB_ANON_ROLE}:${POSTGRES_PASSWORD}@postgres:5432/booksclub'
+      PGRST_DB_SCHEMA: 'public'
+      PGRST_DB_ANON_ROLE: '${PGRST_DB_ANON_ROLE}'
+      PGRST_SERVER_PROXY_URL: 'https://postgrest.booksclub.${TLD}'
+      PGRST_JWT_SECRET: '${PGRST_JWT_SECRET}'
+      PGRST_MAX_ROWS: '5000'
+      VIRTUAL_HOST: 'https://postgrest.booksclub.${TLD}'
+      # EXCLUDE_BASIC_AUTH: 'true'
+      GZIP_COMPRESSION_TYPE: 'application/javascript application/json application/openapi+json'
+
+  api-proxy:
+    image: ${REGISTRY_BASE_URL}/booksclub/api-proxy:1.0.0
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - postgrest
+    environment:
+      PORT: '3000'
+      POSTGREST: 'http://postgrest:3000'
+      REDIS_URL: '${REDIS_URL}'
+      IS_WORKER: 'false'
+      VIRTUAL_HOST: 'https://api-proxy.booksclub.${TLD}'
+      GZIP_COMPRESSION_TYPE: 'application/json'
+      # EXCLUDE_BASIC_AUTH: 'true'
+  # booksclub-api-schedule:
+  #   image: ${REGISTRY_BASE_URL}/api-proxy:0.0.1
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - registry
+  #     - redis
+  #   command: [ "node","--harmony","--optimize_for_size", "--max_old_space_size=460", "--gc_interval=100", "schedule.js" ]
+  #   environment:
+  #     - PORT=3000
+  #     - POSTGREST=http://postgrest:3000
+  #     - REDIS_URL=${REDIS_URL}
+  #     - IS_WORKER=false
+  api-cache:
+    restart: 'unless-stopped'
+    image: '${REGISTRY_BASE_URL}/booksclub/api-cache:1.0.0'
+    depends_on:
+      - api-proxy
+    environment: 
+      CACHE_SOURCE_1: 'http://api-proxy:3000'
+      VIRTUAL_HOST: 'https://api.booksclub.${TLD}'
+      GZIP_COMPRESSION_TYPE: 'application/json'
+      # EXCLUDE_BASIC_AUTH: 'true'
+    command: /bin/sh -c "envsubst '$$CACHE_SOURCE_1' < /app/apicache.conf > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+    volumes: 
+      - '${ROOT_FOLDER}/api-cache/data:/app/cache'
+  booksclub:
+    image: '${REGISTRY_BASE_URL}/booksclub/booksclub:1.0.0'
+    restart: 'unless-stopped'
+    depends_on:
+      - api-proxy
+      - api-cache
+    environment: 
+      API_URL: 'http://api-cache'
+      EXCLUDE_BASIC_AUTH: 'true'
+      VIRTUAL_HOST: |
+        https://booksclub.${TLD},
+        https://booksclub.space,
+        https://nybooks.club,
+        https://labooks.club,
+        https://sfbooks.club,
+        https://houstonbooks.club,
+        https://cabooks.club,
+        https://brbooks.club,
+        https://riobooks.club,
+        https://arbooks.club,
+        https://mxbooks.club,
+        https://clbooks.club,
+        https://sydneybooks.club,
+        https://jpbooks.club,
+        https://tokyobooks.club,
+        https://krbooks.club,
+        https://seoulbooks.club,
+        https://malaybooks.club,
+        https://twbooks.club,
+        https://idbooks.club,
+        https://inbooks.club,
+        https://mumbaibooks.club,
+        https://delbooks.club,
+        https://bengalurubooks.club,
+        https://ilbooks.club,
+        https://aubooks.club,
+        https://nzbooks.club,
+        https://sgbooks.club,
+        https://hkbooks.club,
+        https://www.carteapenet.ro,
+        https://ukbooks.club,
+        https://iebooks.club,
+        https://nlbooks.club,
+        https://plbooks.club,
+        https://swissbooks.club,
+        https://hubooks.club,
+        https://atbooks.club,
+        https://wienbooks.club,
+        https://frbooks.club,
+        https://parisbooks.club,
+        https://esbooks.club,
+        https://berlinbooks.club,
+        https://hamburgbooks.club,
+        https://dkbooks.club,
+        https://cphbooks.club,
+        https://czbooks.club,
+        https://sebooks.club,
+        https://nobooks.club,
+        https://bebooks.club,
+        https://ptbooks.club,
+        https://zabooks.club
