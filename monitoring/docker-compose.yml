@@ -28,8 +28,8 @@ services:
       - infra_default
     volumes:
       - '${ROOT_FOLDER}/grafana/data:/var/lib/grafana'
-      - '${ROOT_FOLDER}/grafana/log:/var/log/grafana'
-      - '${ROOT_FOLDER}/grafana/etc:/etc/grafana'
+      # - '${ROOT_FOLDER}/grafana/log:/var/log/grafana'
+      # - '${ROOT_FOLDER}/grafana/etc:/etc/grafana'
     environment: 
       GF_SERVER_ROOT: 'https://grafana.${TLD}'
       # GF_AUTH_BASIC: 'true'
@@ -38,7 +38,6 @@ services:
       GF_SECURITY_ADMIN_PASSWORD: '${GENERAL_PASSWORD}'
       GZIP_COMPRESSION_TYPE: 'text/html text/plain text/css application/javascript application/json'
       VIRTUAL_HOST: 'https://grafana.${TLD}'
-      FORCE_SSL: 'true'
 
   alertmanager:
     image: '${REGISTRY_BASE_URL}/monitoring/alertmanager:0.8.0'

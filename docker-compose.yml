@@ -24,12 +24,12 @@ services:
         monitoring:grafana,
         hnews:hnews,
         hnews:kue,
+        booksclub:kue,
         booksclub:postgrest,
-        booksclub:api-proxy,
-        booksclub:api-cache,
-        booksclub:booksclub
+        booksclub:booksclub,
+        booksclub:carteapenet,
     ports:
-      # - '80:80"
+      # - '80:80'
       - '443:443'
       - '1936:1936'
     depends_on: 
@@ -38,6 +38,8 @@ services:
       - registry
     volumes_from:
       - letsencrypt
+    # volumes:
+    #   - '/var/run/docker.sock:/var/run/docker.sock'
 
   letsencrypt:
     image: 'valentinvieriu/letsencrypt:1.0.0'
@@ -45,12 +47,10 @@ services:
     environment:
       EMAIL: 'valentin.vieriu@gmail.com'
       HAPROXY_IMAGE: 'dockercloud/haproxy:1.6.7'
-      DOMAINS : |
-        registry.${TLD},
-        mqtt.${TLD}
+      DOMAINS : postgrest.booksclub.${TLD},hnews.${TLD}
     ports:
       - '80:80'
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
       - '${ROOT_FOLDER}/certs:/certs'
-      - '${ROOT_FOLDER}/letsencrypt:/etc/letsencrypt'
+      # - '${ROOT_FOLDER}/letsencrypt:/etc/letsencrypt'
