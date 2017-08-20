@@ -21,7 +21,7 @@ services:
       - '${ROOT_FOLDER}/postgres/data:/var/lib/postgresql/data'
 
   postgrest:
-    image: '${REGISTRY_BASE_URL}/postgrest:4.2.0'
+    image: 'valentinvieriu/postgrest-4.2.0'
     restart: 'unless-stopped'
     depends_on:
       - postgres
@@ -40,7 +40,7 @@ services:
       # GZIP_COMPRESSION_TYPE: 'application/javascript application/json application/openapi+json'
 
   kue:
-    image: '${REGISTRY_BASE_URL}/kue:0.0.1'
+    image: 'valentinvieriu/kue-0.0.1'
     restart: 'unless-stopped'
     mem_limit: '512M'
     depends_on:
@@ -55,7 +55,7 @@ services:
       GZIP_COMPRESSION_TYPE: ${GZIP_ALL}
 
   chat-bot:
-    image: '${REGISTRY_BASE_URL}/booksclub/chatbot:1.0.0'
+    image: 'valentinvieriu/booksclub/chatbot-1.0.0'
     restart: 'unless-stopped'
     networks:
       - infra_default
@@ -63,7 +63,7 @@ services:
       MQTT_SERVER: 'mqtt'
 
   api-proxy:
-    image: '${REGISTRY_BASE_URL}/booksclub/api-proxy:1.0.0'
+    image: 'valentinvieriu/booksclub/api-proxy-1.0.0'
     restart: 'unless-stopped'
     scale: 1
     depends_on:
@@ -81,7 +81,7 @@ services:
       # EXCLUDE_BASIC_AUTH: 'true'
 
   booksclub-api-schedule:
-    image: '${REGISTRY_BASE_URL}/booksclub/api-proxy:1.0.0'
+    image: 'valentinvieriu/booksclub/api-proxy-1.0.0'
     restart: 'unless-stopped'
     depends_on:
       - redis
@@ -92,7 +92,7 @@ services:
       # IS_WORKER: 'true'
 
   api-cache:
-    image: '${REGISTRY_BASE_URL}/booksclub/api-cache:1.0.0'
+    image: 'valentinvieriu/booksclub/api-cache-1.0.0'
     restart: 'unless-stopped'
     depends_on:
       - api-proxy
@@ -107,7 +107,7 @@ services:
       - '${ROOT_FOLDER}/api-cache/data:/app/cache'
 
   carteapenet:
-    image: '${REGISTRY_BASE_URL}/booksclub/booksclub:1.0.1'
+    image: 'valentinvieriu/booksclub/booksclub-1.0.2'
     restart: 'unless-stopped'
     scale: 2
     depends_on:
@@ -126,7 +126,7 @@ services:
         https://www.carteapenet.ro
 
   booksclub:
-    image: '${REGISTRY_BASE_URL}/booksclub/booksclub:1.0.1'
+    image: 'valentinvieriu/booksclub/booksclub-1.0.2'
     restart: 'unless-stopped'
     scale: 2
     depends_on:
