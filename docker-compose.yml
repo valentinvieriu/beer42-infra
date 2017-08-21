@@ -1,14 +1,14 @@
 version: '2.2'
 services:
-  registry:
-    image: 'registry:2.6.2'
-    restart: 'unless-stopped'
-    environment: 
-      REGISTRY_HTTP_SECRET: '${REGISTRY_HTTP_SECRET}'
-      VIRTUAL_HOST: 'https://registry.${TLD}'
-      # EXCLUDE_BASIC_AUT: =true
-    volumes:
-      - ${ROOT_FOLDER}/registry/data:/var/lib/registry
+  # registry:
+  #   image: 'registry:2.6.2'
+  #   restart: 'unless-stopped'
+  #   environment: 
+  #     REGISTRY_HTTP_SECRET: '${REGISTRY_HTTP_SECRET}'
+  #     VIRTUAL_HOST: 'https://registry.${TLD}'
+  #     # EXCLUDE_BASIC_AUT: =true
+  #   volumes:
+  #     - ${ROOT_FOLDER}/registry/data:/var/lib/registry
 
   haproxy:
     image: 'dockercloud/haproxy:1.6.7'
@@ -16,7 +16,8 @@ services:
     environment: 
       STATS_AUTH: 'admin:${GENERAL_PASSWORD}'
       HTTP_BASIC_AUTH: 'admin:${GENERAL_PASSWORD}'
-      DEFAULT_SSL_CERT: '${DEFAULT_SSL_CERT}'
+      # DEFAULT_SSL_CERT: '${DEFAULT_SSL_CERT}'
+      CERT_FOLDER: '/certs/'
       # DEBUG: 'true'
       ADDITIONAL_SERVICES: |
         tools:portainer,
@@ -34,8 +35,8 @@ services:
       - '1936:1936'
     depends_on: 
       - letsencrypt
-    links: 
-      - registry
+    # links: 
+    #   - registry
     volumes_from:
       - letsencrypt
     # volumes:
@@ -47,7 +48,7 @@ services:
     environment:
       EMAIL: 'valentin.vieriu@gmail.com'
       HAPROXY_IMAGE: 'dockercloud/haproxy:1.6.7'
-      DOMAINS : postgrest.booksclub.${TLD},hnews.${TLD}
+      DOMAINS : 'postgrest.booksclub.${TLD};hnews.${TLD};booksclub.${TLD};portainer.${TLD};grafana.${TLD};'
     ports:
       - '80:80'
     volumes:
