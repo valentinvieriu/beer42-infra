@@ -12,7 +12,7 @@ services:
       - '${ROOT_FOLDER}/redis/data:/data'
 
   chrome-headless:
-    image: 'valentinvieriu/chrome-headless:60.0.3112.78-1'
+    image: 'valentinvieriu/chrome-headless:60.0.3112.101-1'
     restart: 'unless-stopped'
     shm_size: '2G'
     restart: 'always'
@@ -26,7 +26,7 @@ services:
     #   VIRTUAL_HOST: 'ws://chrome-headless.${TLD}'
 
   hnews:
-    image: '${REGISTRY_BASE_URL}/hnews/hnews:1.0.0'
+    image: 'valentinvieriu/hnews:1.0.2'
     restart: 'unless-stopped'
     mem_limit: '1G'
     depends_on: 
@@ -43,7 +43,7 @@ services:
       EXCLUDE_BASIC_AUTH: 'true'
 
   kue:
-    image: '${REGISTRY_BASE_URL}/kue:0.0.1'
+    image: 'valentinvieriu/booksclub:kue-1.0.1'
     restart: 'unless-stopped'
     mem_limit: '512M'
     depends_on:
@@ -58,7 +58,7 @@ services:
       GZIP_COMPRESSION_TYPE: 'text/html text/plain text/css application/javascript application/json'
 
   node-screenshots:
-    image: '${REGISTRY_BASE_URL}/node-screenshots:0.0.1'
+    image: 'valentinvieriu/node-screenshots:1.0.2'
     restart: 'unless-stopped'
     depends_on:
       - local-redis
