@@ -1,0 +1,37 @@
+version: '2.2'
+# networks:
+#   infra_default:
+#     external: true
+volumes:
+  nvidia_driver_384.59:
+    external:
+      name: nvidia_driver_384.59
+services:
+  nvidia-test:
+    # image: 'nvidia/cuda'
+    image: 'nvidia/cuda:8.0-devel-ubuntu16.04'
+    # image: 'nvidia/cuda:8.0-cudnn7-runtime-ubuntu16.04'
+    restart: 'unless-stopped'
+    command: 'nvidia-smi'
+    devices: 
+      - '/dev/nvidia0:/dev/nvidia0'
+      - '/dev/nvidiactl:/dev/nvidiactl'
+      - '/dev/nvidia-uvm:/dev/nvidia-uvm'
+      - '/dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools'
+    volumes:
+      - 'nvidia_driver_384.59:/usr/local/nvidia:ro'
+  torch-rnn:
+    image: 'valentinvieriu/torch-rnn:1.0.0'
+    restart: 'unless-stopped'
+    # command: 'nvidia-smi'
+    # command: 'python scripts/preprocess.py --input_txt /root/data/input/nytimes_reviews.txt --output_h5 /root/data/input/nytimes_reviews.h5 --output_json /root/data/input/nytimes_reviews.json'
+    # command: 'th sample.lua -checkpoint /root/data/deep-hackernews/models/latest.t7 -length 20'
+    command: 'th train.lua -input_h5 /root/data/input/nytimes_reviews.h5 -input_json /root/data/input/nytimes_reviews.json'
+    devices: 
+      - '/dev/nvidia0:/dev/nvidia0'
+      - '/dev/nvidiactl:/dev/nvidiactl'
+      - '/dev/nvidia-uvm:/dev/nvidia-uvm'
+      - '/dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools'
+    volumes:
+      - 'nvidia_driver_384.59:/usr/local/nvidia:ro'
+      - '${ROOT_FOLDER}/torch-rnn/data:/root/data'
