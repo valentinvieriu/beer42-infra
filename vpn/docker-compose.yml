@@ -3,7 +3,7 @@ version: '2.2'
 #   infra_default:
 #     external: true
 services:
-  ovpn-init:
+  ipsec-vpn:
     image: 'valentinvieriu/ipsec-vpn-server:1.0.0'
     restart: always
     privileged: true
