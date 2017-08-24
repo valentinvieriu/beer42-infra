@@ -4,7 +4,7 @@ version: '2.2'
 #     external: true
 services:
   ovpn-init:
-    image: 'hwdsl2/ipsec-vpn-server'
+    image: 'valentinvieriu/ipsec-vpn-server:1.0.0'
     restart: always
     privileged: true
     ports:
