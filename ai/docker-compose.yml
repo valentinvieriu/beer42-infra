@@ -11,7 +11,6 @@ services:
     # image: 'nvidia/cuda'
     image: 'nvidia/cuda:8.0-devel-ubuntu16.04'
     # image: 'nvidia/cuda:8.0-cudnn7-runtime-ubuntu16.04'
-    restart: 'unless-stopped'
     command: 'nvidia-smi'
     devices: 
       - '/dev/nvidia0:/dev/nvidia0'
@@ -22,11 +21,24 @@ services:
       - 'nvidia_driver_384.59:/usr/local/nvidia:ro'
   torch-rnn:
     image: 'valentinvieriu/torch-rnn:1.0.0'
-    restart: 'unless-stopped'
+    environment:
+      TERM: screen
     # command: 'nvidia-smi'
     # command: 'python scripts/preprocess.py --input_txt /root/data/input/nytimes_reviews.txt --output_h5 /root/data/input/nytimes_reviews.h5 --output_json /root/data/input/nytimes_reviews.json'
     # command: 'th sample.lua -checkpoint /root/data/deep-hackernews/models/latest.t7 -length 20'
-    command: 'th train.lua -input_h5 /root/data/input/nytimes_reviews.h5 -input_json /root/data/input/nytimes_reviews.json'
+    command: |
+      th train.lua
+        -input_h5 /root/data/input/nytimes_reviews.h5
+        -input_json /root/data/input/nytimes_reviews.json
+        -checkpoint_every 5000
+        -checkpoint_name /root/data/models/model01/checkpoint
+        -rnn_size 1024
+        -num_layers 4
+        -dropout 0.1
+        -batch_size 200
+        -seq_length 200
+        -max_epochs 30
+        -print_every 10
     devices: 
       - '/dev/nvidia0:/dev/nvidia0'
       - '/dev/nvidiactl:/dev/nvidiactl'
