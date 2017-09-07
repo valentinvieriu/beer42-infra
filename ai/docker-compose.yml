@@ -10,7 +10,7 @@ services:
   nvidia-test:
     # image: 'nvidia/cuda'
     image: 'nvidia/cuda:8.0-devel-ubuntu16.04'
-    # image: 'nvidia/cuda:8.0-cudnn7-runtime-ubuntu16.04'
+    # image: 'nvidia/cuda:8.0-cudnn7-devel-ubuntu16.04'
     command: 'nvidia-smi'
     devices: 
       - '/dev/nvidia0:/dev/nvidia0'
@@ -20,12 +20,17 @@ services:
     volumes:
       - 'nvidia_driver_375.82:/usr/local/nvidia:ro'
   torch-rnn:
+<<<<<<< Updated upstream
     image: 'valentinvieriu/torch-rnn:1.0.1'
+=======
+    image: 'valentinvieriu/torch-rnn:1.0.2'
+>>>>>>> Stashed changes
     environment:
       TERM: screen
     # command: 'nvidia-smi'
     # command: |
     #   python scripts/preprocess.py
+<<<<<<< Updated upstream
     #     --input_txt /root/data/input/reviews_Books.txt
     #     --output_h5 /root/data/input/reviews_Books.h5
     #     --output_json /root/data/input/reviews_Books.json
@@ -43,6 +48,30 @@ services:
         -seq_length 200
         -max_epochs 50
         -print_every 10
+=======
+    #     --use_words
+    #     --input_txt /root/data/input/reviews_Books_1.txt
+    #     --output_h5 /root/data/input/reviews_Books_1_use_words.h5
+    #     --output_json /root/data/input/reviews_Books_1_use_words.json
+    # command: 'th sample.lua -checkpoint /root/data/deep-hackernews/models/latest.t7 -length 20'
+    command: |
+      th train.lua
+        -input_h5 /root/data/input/reviews_Books_1_use_words.h5
+        -input_json /root/data/input/reviews_Books_1_use_words.json
+        -checkpoint_every 5000
+        -checkpoint_name /root/data/models/model02/checkpoint
+        -rnn_size 512
+        -num_layers 2
+        -dropout 0.3
+        -batch_size 4
+        -seq_length 256
+        -max_epochs 30
+        -print_every 500
+        -gpu 0
+        -gpu_backend cuda
+        -cudnn 1
+        -cudnn_fastest 1
+>>>>>>> Stashed changes
     devices: 
       - '/dev/nvidia0:/dev/nvidia0'
       - '/dev/nvidiactl:/dev/nvidiactl'
