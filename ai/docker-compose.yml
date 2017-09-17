@@ -20,29 +20,45 @@ services:
     volumes:
       - 'nvidia_driver_384.59:/usr/local/nvidia:ro'
   torch-rnn:
-    image: 'valentinvieriu/torch-rnn:1.0.0'
+    image: 'valentinvieriu/torch-rnn:1.0.2'
     environment:
       TERM: screen
     # command: 'nvidia-smi'
     # command: |
     #   python scripts/preprocess.py
-    #     --input_txt /root/data/input/nytimes_reviews.txt
-    #     --output_h5 /root/data/input/nytimes_reviews.h5
-    #     --output_json /root/data/input/nytimes_reviews.json
-    # command: 'th sample.lua -checkpoint /root/data/deep-hackernews/models/latest.t7 -length 20'
+    #     --input_txt /root/data/input/clickbait/clickbait.txt
+    #     --output_h5 /root/data/input/clickbait/clickbait.h5
+    #     --output_json /root/data/input/clickbait/clickbait.json
+    # command: |
+    #   th sample.lua
+    #       -checkpoint /root/data/models/model04/checkpoint_10000.t7
+    #       -length 5000
+    #       -start_text "# It's the year 2044, and the real world has become an ugly place"
+    #       -sample 1
+    #       -temperature 0.8
+    #       -gpu 0
+    #       -gpu_backend cuda
+    #       -verbose 1
+    #       -stream 1
     command: |
       th train.lua
-        -input_h5 /root/data/input/nytimes_reviews.h5
-        -input_json /root/data/input/nytimes_reviews.json
-        -checkpoint_every 5000
-        -checkpoint_name /root/data/models/model01/checkpoint
-        -rnn_size 1024
-        -num_layers 4
-        -dropout 0.1
-        -batch_size 200
-        -seq_length 200
-        -max_epochs 30
-        -print_every 10
+        -input_h5 /root/data/input/clickbait/clickbait.h5
+        -input_json /root/data/input/clickbait/clickbait.json
+        -checkpoint_every 10000
+        -checkpoint_name /root/data/models/clickbait/model01/checkpoint
+        -init_from /root/data/models/clickbait/model01/final
+        -rnn_size 2048
+        -num_layers 3
+        -dropout 0.2
+        -learning_rate 0.00005
+        -batch_size 128
+        -seq_length 80
+        -max_epochs 32
+        -print_every 1000
+        -gpu 0
+        -gpu_backend cuda
+        -cudnn 1
+        -cudnn_fastest 1
     devices: 
       - '/dev/nvidia0:/dev/nvidia0'
       - '/dev/nvidiactl:/dev/nvidiactl'
