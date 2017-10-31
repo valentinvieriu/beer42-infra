@@ -128,7 +128,7 @@ services:
   booksclub:
     image: 'valentinvieriu/booksclub:booksclub-1.0.3'
     restart: 'unless-stopped'
-    scale: 2
+    scale: 4
     depends_on:
       - api-proxy
       - api-cache

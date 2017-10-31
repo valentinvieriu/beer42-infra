@@ -43,7 +43,7 @@ services:
     #   - '/var/run/docker.sock:/var/run/docker.sock'
 
   letsencrypt:
-    image: 'valentinvieriu/letsencrypt:1.0.0'
+    image: 'valentinvieriu/letsencrypt:1.1.1'
     restart: 'always'
     environment:
       EMAIL: 'valentin.vieriu@gmail.com'
